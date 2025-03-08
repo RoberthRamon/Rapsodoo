@@ -6,7 +6,9 @@ from datetime import datetime
 
 
 def fetch_data(url):
-    # retrieve data from a URL
+    """ 
+    retrieve data from a URL
+    """
     try:
         response = requests.get(url)
         response.raise_for_status()  
@@ -36,6 +38,40 @@ def get_latest_data(data):
     
     return latest_data
 
+def check_duplicate_regions(data):
+    """
+    Check for duplicate region codes in the data and print a warning if necessary.
+
+    Returns:
+        dict: Dictionary with duplicated region codes and their number of occurrences.
+    """
+    region_duplicate=defaultdict(int)
+    for entry in data:
+        cod_region= entry["codice_regione"]
+        region_duplicate[cod_region] += 1
+
+    duplicate_keys = {k: v for k, v in region_duplicate.items() if v > 1}
+
+    if duplicate_keys:
+        print("Warning: Duplicated codice_regione found!", duplicate_keys)
+
+    return duplicate_keys
+
+
+def process_data(data):
+    # TODO ASK: If the JSON contains two or more records with the same cod_region, should I sum the cases, or is it a mistake?
+
+    check_duplicate_regions(data)
+
+    # in this dictionary save the (denominazione_regione, sum all totale_casi)
+    region_cases = defaultdict(int)
+    for entry in data:
+        name_region= entry["denominazione_regione"]
+        cases      = entry["totale_casi"]
+        region_cases[name_region] += cases
+    
+    return sorted(region_cases.items(), key=lambda x: (-x[1], x[0]))
+
 def main():
     #argparse.ArgumentParser: helps manage and interpret the arguments passed to the script from the command line.
     parser = argparse.ArgumentParser(description="Aggregate COVID-19 cases by region.")
@@ -44,13 +80,7 @@ def main():
     # list of arguments
     args = parser.parse_args()
 
-    # python init.py --file dati.json
-    # python init.py --file dpc-covid19-ita-regioni-vuoto.json
-    # python init.py --file dpc-covid19-ita-regioni-error.json
-    # python init.py --file dpc-covid19-ita-regioni-noKeyData.json
-
     url = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni.json"
-    #url = "___https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-region-latest.json"
     
     if args.fileJSON:
         # if in the command line are the arguments
@@ -77,9 +107,13 @@ def main():
     
      # get data for the latest date
     latest_data = get_latest_data(data)
+    if latest_data==None:
+        return
+    
 
-    # TODO: return latest_data = None
-    print(latest_data)
+    sorted_cases = process_data(latest_data)
+
+    for region, cases in sorted_cases:
+        print(f"{region}: {cases}")
 
 
-    print ("END ")
