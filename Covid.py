@@ -24,8 +24,9 @@ def main():
     args = parser.parse_args()
     # python script.py --file dati.json
 
-    url = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-region.json"
-
+    url = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni.json"
+    #url = "___https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-region-latest.json"
+    
     if args.fileJSON:
         try:
             with open(args.fileJSON, "r", encoding="utf-8") as f:
@@ -36,4 +37,9 @@ def main():
     else:
         data = fetch_data(url)
 
-    print ("andato a buon fine")    
+    # Handling errors for an incorrect URL
+    if not data:
+        print("Error: Unable to fetch or read JSON data.")
+        return
+    
+    print ("END ")
