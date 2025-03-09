@@ -1,6 +1,8 @@
 import requests
 import json
 import argparse
+import pandas as pd
+import os
 from collections import defaultdict
 from datetime import datetime
 
@@ -41,15 +43,17 @@ def get_latest_data(data,dateJSON):
         ####################################
         # filter records with the maximum date
         latest_data = [entry for entry in data if entry["parsed_date"].date() == dateJSON]
+        date_data=dateJSON
         print("COVID data grouped by regions on the date",dateJSON)
     else:
         # find the maximum date in the JSON
         max_date = max(entry["parsed_date"] for entry in data)
         # filter records with the maximum date
         latest_data = [entry for entry in data if entry["parsed_date"] == max_date]
+        date_data=max_date
         print("COVID data grouped by regions on the date",max_date)
     
-    return latest_data
+    return latest_data,date_data
 
 def check_duplicate_regions(data):
     """
@@ -84,6 +88,15 @@ def process_data(data):
         region_cases[name_region] += cases
     
     return sorted(region_cases.items(), key=lambda x: (-x[1], x[0]))
+
+
+#TASK3
+def save_to_excel(data, dateFile):
+    filename = f"covid_data_{dateFile.strftime('%Y%m%d')}.xlsx"
+    download_path = os.path.join(os.path.expanduser("~"), "Downloads", filename)
+    df = pd.DataFrame(data, columns=["Region", "Total number of cases"])
+    df.to_excel(download_path, index=False)
+    print(f"Data saved to {download_path}")
 
 def main():
 
@@ -132,14 +145,17 @@ def main():
     #...TASK2    
 
     # get data for the latest date
-    latest_data = get_latest_data(data,dateJSON)
+    latest_data,date_data = get_latest_data(data,dateJSON)
     if latest_data==None or latest_data==[]:
-        print("TThere is no data in the JSON for the date",dateJSON)
+        print("There is no data in the JSON for the date",dateJSON)
         return
     
     sorted_cases = process_data(latest_data)
 
     for region, cases in sorted_cases:
         print(f"{region}: {cases}")
+    
+    #TASK3  
+    save_to_excel(sorted_cases,date_data)
 
 
