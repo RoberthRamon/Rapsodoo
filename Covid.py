@@ -21,7 +21,7 @@ def fetch_data(url):
     
 def get_latest_data(data,dateJSON):
     """
-    
+    Extract the data for a specific date or max date
     """
     # convert date strings to datetime objects for the correct search
     for entry in data:
@@ -32,7 +32,7 @@ def get_latest_data(data,dateJSON):
         try:
             entry["parsed_date"] = datetime.strptime(entry["data"], "%Y-%m-%dT%H:%M:%S")
         except ValueError:
-            print(f"Errore di formattazione della data in entry: {entry}")
+            print(f"Date formatting error in entry: {entry}")
 
     # TASK2: 
     if dateJSON!=None:
@@ -40,13 +40,14 @@ def get_latest_data(data,dateJSON):
         #TODO: verifie the time
         ####################################
         # filter records with the maximum date
-        latest_data = [entry for entry in data if entry["parsed_date"] == dateJSON]
+        latest_data = [entry for entry in data if entry["parsed_date"].date() == dateJSON]
+        print("COVID data grouped by regions on the date",dateJSON)
     else:
         # find the maximum date in the JSON
         max_date = max(entry["parsed_date"] for entry in data)
-        
         # filter records with the maximum date
         latest_data = [entry for entry in data if entry["parsed_date"] == max_date]
+        print("COVID data grouped by regions on the date",max_date)
     
     return latest_data
 
@@ -85,8 +86,6 @@ def process_data(data):
     return sorted(region_cases.items(), key=lambda x: (-x[1], x[0]))
 
 def main():
-    #TODO: Message containing the data with the date.
-    #TODO: if the date not is a the current date --> message 
 
     #argparse.ArgumentParser: helps manage and interpret the arguments passed to the script from the command line.
     parser = argparse.ArgumentParser(description="Aggregate COVID-19 cases by region.")
@@ -123,7 +122,6 @@ def main():
         print("Error: unable to fetch or read JSON data.")
         return
     
-    #python init.py --dateJSON 09/03/2025
     #TASK2...
     dateJSON=None
     if args.dateJSON:
@@ -135,10 +133,10 @@ def main():
 
     # get data for the latest date
     latest_data = get_latest_data(data,dateJSON)
-    if latest_data==None:
+    if latest_data==None or latest_data==[]:
+        print("TThere is no data in the JSON for the date",dateJSON)
         return
     
-
     sorted_cases = process_data(latest_data)
 
     for region, cases in sorted_cases:
