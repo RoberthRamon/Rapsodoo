@@ -44,8 +44,45 @@ python init.py --dateJSON 2023-01-01
 ### Saving Data to an Excel File  
 The program automatically generates an Excel file with the aggregated data in the user's `Downloads` folder.  
 
+## Webserver
+This Flask-based API retrieves and displays COVID-19 case data in Italy
+
+### Running the Server
+To start the Flask server, run the following command:
+```bash
+python server.py
+```
+### Available Endpoints
+
+#### `GET /covid-data`
+
+##### Optional Parameters:
+
+- **fileJSON**: Path to a local JSON file containing COVID-19 data.
+- **dateJSON**: Specific date to filter data in different formats `YYYY-MM-DD`.
+
+##### Usage Examples:
+
+1. **Retrieve the latest data from the GitHub repository:**
+   ```bash
+   curl "http://localhost:5001/covid-data"
+   ```
+
+2. **Retrieve data from a local file:**
+   ```bash
+   curl "http://localhost:5001/covid-data?fileJSON=data.json"
+   ```
+   JSON file must be in the same directory as server.py
+
+3. **Retrieve data filtered by a specific date:**
+   ```bash
+   curl "http://localhost:5001/covid-data?dateJSON=2023-01-01"
+   ```
+
+
 ## Project Structure  
 - `init.py` - Main script  
 - `Covid.py` - Core script  
 - `Covid_Utils.py` - Utility functions for date management  
-- `README.md` - Documentation  
+- `Web/Server.py` - Webserver script
+- `README.md` - Documentation
